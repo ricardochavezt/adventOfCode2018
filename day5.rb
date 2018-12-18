@@ -23,7 +23,13 @@ def fully_react_polymer(polymer)
   end
 end
 
-polymer = fully_react_polymer ARGF.read.chomp
+polymer = ARGF.read.chomp
+min_length = polymer.size
+('a'..'z').each do |c|
+  corrected_polymer = polymer.gsub(Regexp.new(c, Regexp::IGNORECASE), "")
+  reacted_polymer = fully_react_polymer(corrected_polymer)
+  min_length = reacted_polymer.size if reacted_polymer.size < min_length
+end
 
 # puts polymer
-puts polymer.size
+puts min_length
