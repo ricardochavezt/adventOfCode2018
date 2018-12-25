@@ -89,5 +89,27 @@ function findLargestArea(pointList) {
     console.log(maxArea);
 }
 
+const MAX_TOTAL_DISTANCE = 10000;
+
+function calculateTotalDistance(point, pointList) {
+    return pointList.reduce((acum, curr) => {
+        return acum + calculateDistance(point, curr);
+    }, 0);
+}
+
+function findLargestArea2(pointList) {
+    let bounds = calculateBounds(pointList);
+    let totalArea = 0;
+    for (let x = bounds.xMin; x <= bounds.xMax; x++) {
+        for (let y = bounds.yMin; y <= bounds.yMax; y++) {
+            let totalDistance = calculateTotalDistance({x, y}, pointList);
+            if (totalDistance < MAX_TOTAL_DISTANCE) {
+                totalArea += 1;
+            }
+        }
+    }
+    console.log(totalArea);
+}
+
 rl.on('line', line => coordinateList.push(parseLine(line)))
-    .on('close', () => findLargestArea(coordinateList));
+    .on('close', () => findLargestArea2(coordinateList));
