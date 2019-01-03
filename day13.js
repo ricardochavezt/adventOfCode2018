@@ -145,7 +145,24 @@ function takeCurve(track, direction) {
     return KEEP_STRAIGHT; // no debería suceder, pero por si las dudas
 }
 
-const limitTicks = 20;
+function getAction(track, cart) {
+    let action;
+    switch(track) {
+    case HORIZONTAL_TRACK:
+    case VERTICAL_TRACK:
+        action = KEEP_STRAIGHT;
+        break;
+    case INTERSECTION:
+        action = cart.action;
+        cart.action = nextAction(cart.action);
+        break;
+    case LEFT_TURN:
+    case RIGHT_TURN:
+        action = takeCurve(track, cart.direction);
+        break;
+    }
+    return action;
+}
 
 function findFirstCrash(carts, trackMap) {
     let padLengthX = maxXCoord.toString().length, padLengthY = maxYCoord.toString().length;
@@ -153,29 +170,10 @@ function findFirstCrash(carts, trackMap) {
     let crashed = false;
     let tick = 0;
     while (!crashed) {
-        let currentCartPositions = carts.reduce((acum, curr) => {
-            let positionKey = `${curr.y.toString().padStart(padLengthY, '0')},${curr.x.toString().padStart(padLengthX, '0')}`;
-            acum[positionKey] = curr;
-            return acum;
-        }, {});
         carts.forEach((cart, i) => {
             if (crashed) { return; }
             let track = trackMap[`${cart.x},${cart.y}`];
-            let action;
-            switch(track) {
-            case HORIZONTAL_TRACK:
-            case VERTICAL_TRACK:
-                action = KEEP_STRAIGHT;
-                break;
-            case INTERSECTION:
-                action = cart.action;
-                cart.action = nextAction(cart.action);
-                break;
-            case LEFT_TURN:
-            case RIGHT_TURN:
-                action = takeCurve(track, cart.direction);
-                break;
-            }
+            let action = getAction(track, cart);
             moveCart(cart, action);
             if (carts.some((cart2, j) => i != j && cart.x == cart2.x && cart.y == cart2.y)) {
                 // crash!!
