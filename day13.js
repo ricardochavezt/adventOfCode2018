@@ -165,8 +165,6 @@ function getAction(track, cart) {
 }
 
 function findFirstCrash(carts, trackMap) {
-    let padLengthX = maxXCoord.toString().length, padLengthY = maxYCoord.toString().length;
-
     let crashed = false;
     let tick = 0;
     while (!crashed) {
@@ -193,8 +191,37 @@ function findFirstCrash(carts, trackMap) {
     console.log('reached solution at tick', tick);
 }
 
+function findLastCartStanding(carts, trackMap) {
+    let tick = 0;
+    while (carts.length > 1) {
+        carts.forEach((cart, i) => {
+            if (cart.crashed) { return; }
+            let track = trackMap[`${cart.x},${cart.y}`];
+            let action = getAction(track, cart);
+            moveCart(cart, action);
+            carts.forEach((cart2, j) => {
+                if (cart.crashed) { return; }
+                if (i == j) { return; }
+                if (cart.x == cart2.x && cart.y == cart2.y) {
+                    // he ded XD
+                    cart.crashed = true; cart2.crashed = true;
+                    return;
+                }
+            });
+        });
+        carts = carts.filter(cart => !cart.crashed).sort((c1, c2) => {
+            if (c1.y == c2.y) {
+                return c1.x - c2.x;
+            }
+            return c1.y - c2.y;
+        });
+        tick++;
+    }
+    console.log(carts[0]);
+}
+
 let lineNumber = 0;
 rl.on('line', line => {
     parseLine(lineNumber, line);
     lineNumber++;
-}).on('close', () => findFirstCrash(carts, trackMap));
+}).on('close', () => findLastCartStanding(carts, trackMap));
